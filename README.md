@@ -10,7 +10,7 @@
 
 ## Software Architecture
 
-![System Architecture](architecture.png)
+![System Architecture](architecture_new.png)
 
 
 
