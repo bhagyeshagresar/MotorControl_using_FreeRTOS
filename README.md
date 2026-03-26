@@ -1,7 +1,7 @@
 
 
 ## Components used in this project:
-1) Raspberry Pi SBC
+1) Raspberry Pi SBC (Raspberry Pi 4 Model B)
 2) STM32 MCU
 3) INA219 Current Sensor
 4) Brushed DC motor with encoder
@@ -10,10 +10,12 @@
 
 ## Software Architecture
 
-![System Architecture](architecture_new.png)
+![System Architecture](motor_control_architecture.png)
 
+## UI Development
+The Raspberry Pi runs a backend using FastAPI Python framework.
 
-
+## FreeRTOS Configuration
 This project includes the FreeRTOS kernel in the ThirdParty folder and does not use CMSIS RTOS API. This project does not use sysmem.c because FreeRTOS has its own heap management(make sure to check ThirdParty folder to not exclude from build and exclude sysmem.c from build). Also only heap_4.c is used.
 
 ```
