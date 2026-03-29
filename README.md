@@ -1,4 +1,5 @@
-
+# Motor Control Using FreeRTOS
+This project is an attempt to build a complete motion control system to support control of a brushed DC motor to start. It will include an interactive UI and plotting features, communication over UART to the STM32F401RE and firmware for motor control.
 
 ## Components used in this project:
 1) Raspberry Pi SBC (Raspberry Pi 4 Model B)
