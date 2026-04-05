@@ -13,8 +13,18 @@ This project is an attempt to build a complete motion control system to support 
 
 ![System Architecture](motor_control_architecture.png)
 
+### Using Cpp source file
+The application code is written in cpp. The cpp_main() is executed for all the application logic. In order to avoid C++ mangling, the keyword ``` extern "C" ``` is used.
+```#ifdef __cplusplus``` is used so that the C compiler ignores C++-only syntax (like class, extern "C", constructors, and member functions) that would cause compilation errors, since C doesn't understand any of these constructs.
+
 ## UI Development
 The Raspberry Pi runs a backend using FastAPI Python framework.
+
+
+## Motor Encoder Configuration
+The channel A and B of the quadrature are configured to the GPIO Pins PB6 and PB7 respectively. In CubeMX, PB6 GPIO mode is set to generate an interrupt on rising or falling edge(x2 decoding). Make sure to enable the EXTI line[9:5] in System Core NVIC settings. External Interrupt/Event Controller is a hardware block inside the STM32 that watches GPIO pins and generates an interrupt when it detects an edge (rising, falling, or both).
+
+
 
 ## FreeRTOS Configuration
 This project includes the FreeRTOS kernel in the ThirdParty folder and does not use CMSIS RTOS API. This project does not use sysmem.c because FreeRTOS has its own heap management(make sure to check ThirdParty folder to not exclude from build and exclude sysmem.c from build). Also only heap_4.c is used.
