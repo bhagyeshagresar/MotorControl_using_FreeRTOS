@@ -1,0 +1,5 @@
+Learnings/Problems/Solutions
+
+Note: 
+Pin 1 on the encoder is connected to channelB. when moving the motor in clockwise rotation, channel B leads channel A so I conifured GPIO interrupt triggered for channel B 
+to keep the logic same.
