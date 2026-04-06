@@ -4,7 +4,7 @@
  *
  *
  * This class configures a GPIO EXTI interrupt on both rising and falling
- * edges of encoder Channel A. Channel B is read as a level to determine
+ * edges of encoder Channel B. Channel A is read as a level to determine
  * direction. Position is updated atomically in the ISR context.
  *
  * Hardware setup (example for STM32F401RE Nucleo):
@@ -22,16 +22,11 @@
 
 /**
  * @class Encoder
- * @brief Reads a quadrature encoder using EXTI on Channel A.
+ * @brief Reads a quadrature encoder using EXTI on Channel B.
  *
- * Only Channel A triggers interrupts (both edges). Channel B is
+ * Only Channel B triggers interrupts (both edges). Channel A is
  * sampled as a GPIO level at interrupt time to resolve direction.
  *
- * For a standard quadrature encoder:
- *   - Rising edge of A  + B is LOW  -> forward
- *   - Rising edge of A  + B is HIGH -> reverse
- *   - Falling edge of A + B is HIGH -> forward
- *   - Falling edge of A + B is LOW  -> reverse
  */
 class Encoder {
 
