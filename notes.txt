@@ -8,8 +8,9 @@ Learnings:
 With the CPP application files, there is no good way to debug using live expressions. I had to add a debug variable (debug_position) just to see it in live expressions
 
 Note:
-Blue  wire - channel a
-Yellow wire - channel b
+Wiring:
+    Blue  wire - channel a
+    Yellow wire - channel b
 
 Note: 
 -100 to 100 for pwm is the duty cycle range (80 means 80 percent duty cycle)

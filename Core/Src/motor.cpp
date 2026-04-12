@@ -21,17 +21,17 @@ void Motor::stop(void)
     hbridge_->stopPwmOutput();
 }
 
-void Motor::set_duty(int8_t duty)
+void Motor::setDutyCycle(int8_t dutyCycle)
 {
-    hbridge_->setPwmVal(duty);
+    hbridge_->setPwmVal(dutyCycle);
 }
 
-int32_t Motor::get_position(void) const
+int32_t Motor::getPosition(void) const
 {
     return encoder_->readPosition();
 }
 
-void Motor::reset_position(void)
+void Motor::resetPosition(void)
 {
     encoder_->resetPosition();
 }

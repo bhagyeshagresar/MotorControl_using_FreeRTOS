@@ -31,9 +31,9 @@ extern "C" void encoder_exti_callback(uint16_t GPIO_Pin)
 extern "C" void cpp_main(void)
 {
     g_motor.start();
-    g_motor.set_duty(50);  // 50% forward for testing
-
+    //g_motor.setDutyCycle(-40);  // 50% forward for testing
+    g_motor.stop();
     while (1) {
-        debug_position = g_motor.get_position();
+        debug_position = g_motor.getPosition();
     }
 }

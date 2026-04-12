@@ -42,18 +42,18 @@ public:
      * @brief Set motor duty cycle.
      * @param duty  -100 to +100. Sign sets direction.
      */
-    void set_duty(int8_t duty);
+    void setDutyCycle(int8_t dutyCycle);
 
     /**
      * @brief Get current encoder position.
      * @return Tick count (signed).
      */
-    int32_t get_position(void) const;
+    int32_t getPosition(void) const;
 
     /**
      * @brief Reset encoder position to zero.
      */
-    void reset_position(void);
+    void resetPosition(void);
 };
 
 #endif // MOTOR_HPP

@@ -31,11 +31,11 @@ void HBridge::setPwmVal(int8_t pwmVal)
 
     if (pwmVal >= 0)
     {
-        HAL_GPIO_WritePin(dir_port, dir_pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(dir_port, dir_pin, GPIO_PIN_SET);
     }
     else
     {
-        HAL_GPIO_WritePin(dir_port, dir_pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(dir_port, dir_pin, GPIO_PIN_RESET);
         pwmVal = -pwmVal;
     }
 
