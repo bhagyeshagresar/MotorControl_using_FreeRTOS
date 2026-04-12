@@ -1,4 +1,4 @@
-Learnings/Problems/Solutions
+Learnings/Problems/Solutions/Notes
 
 Note: 
 Pin 1 on the encoder is connected to channelB. when moving the motor in clockwise rotation, channel B leads channel A so I conifured GPIO interrupt triggered for channel B 
@@ -29,3 +29,19 @@ PWM mode is a specific output compare mode where the output behavior is defined 
         CCR4 sets the duty cycle
 
 In PWM mode 1 with active-high polarity, the output is high while: CNT<CCR4
+
+
+Learnings:
+__HAL_TIM_GET_AUTORELOAD(htim) & __HAL_TIM_SET_COMPARE(htim, channel, compare) __HAL_TIM_GET_AUTORELOAD
+macros in our code because :
+Performance. These macros expand to a single register read/write — e.g., __HAL_TIM_GET_AUTORELOAD(htim) is just ((htim)->Instance->ARR). On a Cortex-M, that's one memory load instruction.
+
+If it were a function call, you'd get stack frame overhead (push/pop, branch) for something that's literally just reading one register. In time-critical code like PWM updates or ISRs, that overhead matters. Macros guarantee zero overhead — the compiler inlines the register access directly.
+
+That's also why they have the __ prefix — STM HAL convention to signal "this is a lightweight macro, not a full HAL function with error checking."
+
+Learnings:
+extern TIM_HandleTypeDef htim1;
+htim1 is defined in CubeMX-generated main.c (a C file). Your app.cpp needs to use it but doesn't own it. extern says "this variable exists somewhere else — let me reference it."
+
+Without extern, the compiler would allocate a new htim1 in app.cpp, completely separate from the one HAL initialized in main.c. Your PWM calls would use an uninitialized timer handle.

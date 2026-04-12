@@ -19,10 +19,10 @@
 class HBridge {
 
 private:
-    TIM_HandleTypeDef* htim_;
-    uint32_t           channel_;
-    GPIO_TypeDef*      dir_port_;
-    uint16_t           dir_pin_;
+    TIM_HandleTypeDef* htim;
+    uint32_t           channel;
+    GPIO_TypeDef*      dir_port;
+    uint16_t           dir_pin;
 
 public:
     /**
@@ -38,19 +38,22 @@ public:
     /**
      * @brief Start PWM output. Call once before set_duty().
      */
-    void start(void);
+    void startPwmOutput(void);
 
     /**
      * @brief Stop PWM output.
      */
-    void stop(void);
+    void stopPwmOutput(void);
 
     /**
      * @brief Set motor duty cycle.
-     * @param duty  -100 to +100. Sign controls direction pin.
+     * @param pwmVal  -100 to +100. Sign controls direction pin.
      *              Positive = forward (DIR low), Negative = reverse (DIR high).
+     *     Hardware setup (STM32F401RE Nucleo):
+	 *   - PWM  -> PA11 (TIM1_CH4, 10 kHz, ARR = 8399)
+	 *   - DIR  -> PB5  (GPIO Output)
      */
-    void set_duty(int8_t duty);
+    void setPwmVal(int8_t pwmVal);
 };
 
 #endif // HBRIDGE_HPP

@@ -13,25 +13,25 @@ Motor::Motor(HBridge* hbridge, Encoder* encoder)
 
 void Motor::start(void)
 {
-    hbridge_->start();
+    hbridge_->startPwmOutput();
 }
 
 void Motor::stop(void)
 {
-    hbridge_->stop();
+    hbridge_->stopPwmOutput();
 }
 
 void Motor::set_duty(int8_t duty)
 {
-    hbridge_->set_duty(duty);
+    hbridge_->setPwmVal(duty);
 }
 
 int32_t Motor::get_position(void) const
 {
-    return encoder_->read_position();
+    return encoder_->readPosition();
 }
 
 void Motor::reset_position(void)
 {
-    encoder_->reset_position();
+    encoder_->resetPosition();
 }

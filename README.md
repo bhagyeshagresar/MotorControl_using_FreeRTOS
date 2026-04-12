@@ -28,6 +28,7 @@ The Raspberry Pi runs a backend using FastAPI Python framework.
 The channel A and B of the quadrature are configured to the GPIO Pins PB6 and PB7 respectively. In CubeMX, PB6 GPIO mode is set to generate an interrupt on rising or falling edge(x2 decoding). Make sure to enable the EXTI line[9:5] in System Core NVIC settings. External Interrupt/Event Controller is a hardware block inside the STM32 that watches GPIO pins and generates an interrupt when it detects an edge (rising, falling, or both).
 
 ### 2: PWM Configuration
+
 Basic PWM Generation using Timer
 Configured Timer1 CH4 to generate a user defined duty cycle. The prescaler of the timer is set to 1MHz and the ARR register(max rollover counter) is set to 100.
 

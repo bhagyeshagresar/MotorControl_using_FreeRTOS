@@ -24,7 +24,7 @@ extern "C" void encoder_exti_callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == GPIO_PIN_7)
     {
-        g_encoder.read_encoder();
+        g_encoder.readEncoder();
     }
 }
 

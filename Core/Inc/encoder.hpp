@@ -31,20 +31,20 @@
 class Encoder {
 
 	private:
-		GPIO_TypeDef* chA_port_;
-		uint16_t      chA_pin_;
-		GPIO_TypeDef* chB_port_;
-		uint16_t      chB_pin_;
+		GPIO_TypeDef* chA_port;
+		uint16_t      chA_pin;
+		GPIO_TypeDef* chB_port;
+		uint16_t      chB_pin;
 
-		volatile int32_t position_;   // volatile: modified in ISR, read from tasks
+		volatile int32_t position;   // volatile: modified in ISR, read from tasks
 
 	public:
 		/**
 		 * @brief Construct an Encoder instance.
 		 * @param chA_port  GPIO port for Channel A (e.g. GPIOA)
-		 * @param chA_pin   GPIO pin mask for Channel A (e.g. GPIO_PIN_0)
+		 * @param chA_pin   GPIO pin for Channel A (e.g. GPIO_PIN_0)
 		 * @param chB_port  GPIO port for Channel B (e.g. GPIOA)
-		 * @param chB_pin   GPIO pin mask for Channel B (e.g. GPIO_PIN_1)
+		 * @param chB_pin   GPIO pin for Channel B (e.g. GPIO_PIN_1)
 		 */
 		Encoder(GPIO_TypeDef* chA_port, uint16_t chA_pin,
 				GPIO_TypeDef* chB_port, uint16_t chB_pin);
@@ -54,19 +54,19 @@ class Encoder {
 		 * @brief Read the current encoder position (thread/ISR-safe on Cortex-M).
 		 * @return Current tick count (signed, forward = positive).
 		 */
-		int32_t read_position(void) const;
+		int32_t readPosition(void) const;
 
 		/**
 		 * @brief Call this from HAL_GPIO_EXTI_Callback() in main.c or stm32f4xx_it.c.
 		 *        It delegates to the Encoder class internally.
 		 * @param GPIO_Pin  The pin mask that triggered the interrupt.
 		 */
-		void read_encoder(void);
+		void readEncoder(void);
 
 		/**
 		 * @brief Reset position to zero.
 		 */
-		void reset_position(void);
+		void resetPosition(void);
 
 };
 

@@ -14,41 +14,41 @@
 
 Encoder::Encoder(GPIO_TypeDef* chA_port, uint16_t chA_pin,
                  GPIO_TypeDef* chB_port, uint16_t chB_pin)
-    : chA_port_(chA_port),
-      chA_pin_(chA_pin),
-      chB_port_(chB_port),
-      chB_pin_(chB_pin),
-      position_(0)
+    : chA_port(chA_port),
+	  chA_pin(chA_pin),
+	  chB_port(chB_port),
+	  chB_pin(chB_pin),
+      position(0)
 {
 }
 
 
 
-int32_t Encoder::read_position(void) const
+int32_t Encoder::readPosition(void) const
 {
     // On Cortex-M, a 32-bit aligned read is atomic, so this is safe
     // even when called from a FreeRTOS task while the ISR updates it.
-    return position_;
+    return position;
 }
 
-void Encoder::reset_position(void)
+void Encoder::resetPosition(void)
 {
-    position_ = 0;
+    position = 0;
 }
 
 
-void Encoder::read_encoder(void)
+void Encoder::readEncoder(void)
 {
-    GPIO_PinState chA = HAL_GPIO_ReadPin(chA_port_, chA_pin_);
-    GPIO_PinState chB = HAL_GPIO_ReadPin(chB_port_, chB_pin_);
+    GPIO_PinState chA = HAL_GPIO_ReadPin(chA_port, chA_pin);
+    GPIO_PinState chB = HAL_GPIO_ReadPin(chB_port, chB_pin);
 
     if (chA != chB)
     {
-        position_++;
+        position++;
     }
     else
     {
-        position_--;
+        position--;
     }
 }
 
