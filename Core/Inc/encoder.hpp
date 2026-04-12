@@ -20,7 +20,7 @@
 #ifndef ENCODER_HPP
 #define ENCODER_HPP
 
-/**
+/*
  * @class Encoder
  * @brief Reads a quadrature encoder using EXTI on Channel B.
  *

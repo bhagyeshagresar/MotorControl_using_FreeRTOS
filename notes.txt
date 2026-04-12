@@ -27,3 +27,5 @@ PWM mode is a specific output compare mode where the output behavior is defined 
 
         ARR sets the PWM period
         CCR4 sets the duty cycle
+
+In PWM mode 1 with active-high polarity, the output is high while: CNT<CCR4
