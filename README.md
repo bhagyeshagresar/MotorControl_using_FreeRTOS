@@ -34,6 +34,32 @@ Configured Timer1 CH4 to generate a user defined duty cycle. The prescaler of th
 
 Tpwm = ARR/Prescaler = 100/1MHZ = 100 microseconds. The frequency of the PWM is 10 kHZ.
 
+### 3: Sending data to serial plotter python script using UART2
+
+The printf function uses _sbrk(), meaning it uses malloc for buffering output. Since, this project
+implements FreeRTOS using it's own memory allocation scheme, sysmem.c is disabled from build. For this reason, the ```uart_printf.cpp``` and ```uart_printf.hpp``` uses a custom printf function and putchar that is tweaked slighly from the microOS-riscv project.
+
+va_list and related macros are defined in the C standard library <cstdarg>
+
+### 4: Built a Basic PID controller for tracking position
+
+![PID Controller Graph](simple_pid_controller_graph.png)
+
+The PID controller computes a control signal (duty cycle) to drive the motor to a target encoder position. The control signal is computed as:
+
+```u = kp * e + ki * eint + kd * edert```
+
+where `e = target - pos`, `eint` is the accumulated error over time, and `edert` is the rate of change of error.
+
+**What each coefficient does:**
+- **Kp (Proportional)** - Reacts to current error. Larger error = larger output. On its own, Kp cannot fully eliminate error because as the motor approaches the target, the output becomes too small to overcome motor friction. This remaining offset is called **steady-state error**.
+- **Ki (Integral)** - Accumulates error over time. Even a tiny persistent error will eventually build up enough to push the motor past the friction threshold. Ki eliminates steady-state error. Too much Ki causes overshoot and oscillation (integral windup).
+- **Kd (Derivative)** - Reacts to how fast the error is changing. Applies a braking force when the motor approaches the target quickly, reducing overshoot. Acts like a shock absorber. Too much Kd makes the system sluggish and amplifies sensor noise.
+
+**Time measurement:** `getMicros()` is used because the PID loop runs very fast (sub-millisecond). Millisecond resolution would give `deltaT = 0` on many iterations, breaking the derivative and integral calculations. The time difference is converted to seconds so that PID gains stay in human-readable ranges consistent with standard tuning guides.
+
+**Anti-windup:** The integral term `eint` is clamped to prevent unbounded accumulation when the output is saturated. Without this, the motor would overshoot badly after sustained error because `eint` takes a long time to unwind.
+
 
 ## FreeRTOS Configuration
 This project includes the FreeRTOS kernel in the ThirdParty folder and does not use CMSIS RTOS API. This project does not use sysmem.c because FreeRTOS has its own heap management(make sure to check ThirdParty folder to not exclude from build and exclude sysmem.c from build). Also only heap_4.c is used.

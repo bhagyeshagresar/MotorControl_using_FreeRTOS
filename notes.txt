@@ -46,3 +46,272 @@ extern TIM_HandleTypeDef htim1;
 htim1 is defined in CubeMX-generated main.c (a C file). Your app.cpp needs to use it but doesn't own it. extern says "this variable exists somewhere else — let me reference it."
 
 Without extern, the compiler would allocate a new htim1 in app.cpp, completely separate from the one HAL initialized in main.c. Your PWM calls would use an uninitialized timer handle.
+
+Learnings:
+why does my motor not move when I give some duty cycle like 20percent? I hear something but it does not move?
+Answer: 
+That's the motor's stall torque / static friction threshold. At low duty cycles, the average voltage isn't enough to overcome the motor's internal friction and load. The buzzing you hear is the motor coils energizing but not having enough torque to start rotating.
+
+Try ramping up the duty cycle until it starts moving — that's your minimum effective duty cycle. It's common for small DC motors to need 30-50% before they actually spin. Once spinning, you can often drop it lower since dynamic friction is less than static friction.
+
+A few things to keep in mind:
+
+This minimum threshold will vary depending on load and motor
+PWM frequency matters too — if it's too high or too low for your motor/driver, efficiency drops
+Make sure your H-bridge supply voltage matches what the motor expects
+
+
+Learnings:
+why do we need to check eint if we are clamping u?
+Answer:
+Clamping u limits what goes to the motor right now. But eint keeps accumulating in the background even while the output is saturated.
+
+Say the motor is stalled for 5 seconds with steady error. eint grows to, say, 50000. Now when the motor finally moves and error drops to zero, eint is still 50000 — the integral term alone drives u way past 100. The output clamp catches it, but the motor won't stop overshooting until eint slowly unwinds back down. That's integral windup — the motor oscillates wildly past the target.
+
+By clamping eint directly, you prevent that buildup so the controller responds immediately when error changes.
+
+
+Learnings:
+why do we use microseconds for time . Explain with examples and also explain why we convert the time different to seconds for deltaT.
+Answer:
+
+Your PID loop runs very fast — maybe every 100-500 µs. If you use milliseconds:
+
+
+Loop iteration 1: time = 12 ms
+Loop iteration 2: time = 12 ms
+deltaT = 0 ms  ← WRONG, loop definitely took some time
+With microseconds:
+
+
+Loop iteration 1: time = 12300 µs
+Loop iteration 2: time = 12450 µs  
+deltaT = 150 µs  ← actual time captured
+Milliseconds are too coarse. It's like measuring the thickness of a coin with a ruler that only shows centimeters — you'd read 0 cm every time.
+
+Why convert deltaT to seconds
+The PID formula has units. Let's say:
+
+Error e is in encoder ticks
+You want u (output) to be in duty cycle %
+Look at each term:
+
+Proportional: kp * e
+
+kp has units: %/tick
+kp * e = (%/tick) × tick = % ✓
+Derivative: kd * (e - eprev) / deltaT
+
+This is rate of change — ticks per second
+If deltaT is in seconds: kd has units % · s/tick
+If deltaT were in microseconds: kd would need to be % · µs/tick — a tiny number like 0.000001
+Seconds keeps kd in a human-friendly range
+Integral: ki * eint where eint += e * deltaT
+
+eint is error accumulated over time — tick·seconds
+If deltaT is in seconds: ki has units %/(tick·s)
+If deltaT were in microseconds: eint would be 1,000,000× larger, so ki would need to be 1,000,000× smaller
+Concrete example
+Say error = 100 ticks and your loop runs every 200 µs:
+
+With deltaT in seconds (0.0002):
+
+
+kp = 0.5,  ki = 0.1,  kd = 0.01
+
+P = 0.5 * 100 = 50
+eint += 100 * 0.0002 = 0.02
+I = 0.1 * 0.02 = 0.002
+D = 0.01 * (100 / 0.0002) = 5000  ← makes sense, fast change
+With deltaT in microseconds (200):
+
+
+You'd need: kp = 0.5, ki = 0.0000001, kd = 0.00001
+
+eint += 100 * 200 = 20000  ← huge number
+The gains become tiny, unreadable numbers. Every PID tuning guide, textbook, and online resource uses seconds — so when someone says "start with kp=1, ki=0.1", you can use those values directly.
+
+Summary: Microseconds for measuring (precision), seconds for calculating (readable gains, standard convention).
+
+
+Your PID loop runs very fast — maybe every 100-500 µs. If you use milliseconds:
+
+
+Loop iteration 1: time = 12 ms
+Loop iteration 2: time = 12 ms
+deltaT = 0 ms  ← WRONG, loop definitely took some time
+With microseconds:
+
+
+Loop iteration 1: time = 12300 µs
+Loop iteration 2: time = 12450 µs  
+deltaT = 150 µs  ← actual time captured
+Milliseconds are too coarse. It's like measuring the thickness of a coin with a ruler that only shows centimeters — you'd read 0 cm every time.
+
+Why convert deltaT to seconds
+The PID formula has units. Let's say:
+
+Error e is in encoder ticks
+You want u (output) to be in duty cycle %
+Look at each term:
+
+Proportional: kp * e
+
+kp has units: %/tick
+kp * e = (%/tick) × tick = % ✓
+Derivative: kd * (e - eprev) / deltaT
+
+This is rate of change — ticks per second
+If deltaT is in seconds: kd has units % · s/tick
+If deltaT were in microseconds: kd would need to be % · µs/tick — a tiny number like 0.000001
+Seconds keeps kd in a human-friendly range
+Integral: ki * eint where eint += e * deltaT
+
+eint is error accumulated over time — tick·seconds
+If deltaT is in seconds: ki has units %/(tick·s)
+If deltaT were in microseconds: eint would be 1,000,000× larger, so ki would need to be 1,000,000× smaller
+Concrete example
+Say error = 100 ticks and your loop runs every 200 µs:
+
+With deltaT in seconds (0.0002):
+
+
+kp = 0.5,  ki = 0.1,  kd = 0.01
+
+P = 0.5 * 100 = 50
+eint += 100 * 0.0002 = 0.02
+I = 0.1 * 0.02 = 0.002
+D = 0.01 * (100 / 0.0002) = 5000  ← makes sense, fast change
+With deltaT in microseconds (200):
+
+
+You'd need: kp = 0.5, ki = 0.0000001, kd = 0.00001
+
+eint += 100 * 200 = 20000  ← huge number
+The gains become tiny, unreadable numbers. Every PID tuning guide, textbook, and online resource uses seconds — so when someone says "start with kp=1, ki=0.1", you can use those values directly.
+
+Summary: Microseconds for measuring (precision), seconds for calculating (readable gains, standard convention).
+
+
+Learnings:
+How to choose target-pos vs pos-target?
+Answer:
+It depends on which direction your encoder counts as positive and which direction your motor drives with a positive duty cycle.
+
+If a positive duty cycle makes the motor spin in the direction that increases encoder position, then use target - pos:
+
+pos too low → positive error → positive duty → motor moves forward → pos increases ✓
+If a positive duty cycle makes the motor spin in the direction that decreases encoder position, then use pos - target.
+
+Basically: set a positive target, give it a positive duty manually,
+ and watch which way pos moves. If pos goes up, use target - pos.
+  If pos goes down, use pos - target. You want the signs to form a negative feedback loop — error drives the motor toward the target, not away from it.
+
+
+Learnings:
+    How does printf() work using UART in STM32
+
+Answer:
+
+    Step 1: Enable USART2 in CubeMX
+    Open your .ioc file
+    Go to Connectivity → USART2
+    Set mode to Asynchronous
+    Set baud rate to 115200
+    Leave everything else default (8 bits, no parity, 1 stop bit)
+    Generate code
+    On your Nucleo, PA2 (TX) and PA3 (RX) are already wired to the ST-Link — CubeMX should auto-assign these pins.
+
+    Step 2: Override _write
+    After code generation, CubeMX creates huart2 in main.c. Add this in main.c (outside any USER CODE block, or inside a USER CODE section so it survives regeneration):
+
+
+    /* USER CODE BEGIN 0 */
+    int _write(int file, char *data, int len)
+    {
+        HAL_UART_Transmit(&huart2, (uint8_t*)data, len, HAL_MAX_DELAY);
+        return len;
+    }
+    /* USER CODE END 0 */
+    Step 3: Add printf in your PID loop
+    In app.cpp, you need access to printf and the call. Add #include <cstdio> at the top, then in the loop after updating debug variables:
+
+
+    printf("%ld,%ld,%ld,%d\n", debugTarget, debugPosition, debugError, (int)debugU);
+    Step 4: Find the COM port
+    Plug in the Nucleo USB
+    Open Device Manager → Ports (COM & LPT)
+    Look for STMicroelectronics STLink Virtual COM Port (COMx)
+    Note the COM number
+    Step 5: Run the plotter
+
+    pip install pyserial matplotlib
+    python pid_plotter.py --port COMx --baud 115200
+    One warning: printf with HAL_UART_Transmit is blocking — it waits until all bytes are sent. At 115200 baud, a 30-character line takes ~260 µs. This will slow your PID loop. If that's a problem, you can either:
+
+    Print every Nth iteration (e.g., every 10th) instead of every loop
+    Switch to DMA-based UART later
+    For tuning, printing every 10th iteration is plenty. 
+
+
+
+Learnings:
+
+Who calls write in printf execution?
+Answer:
+
+printf does, through the C library's internal chain:
+
+printf("hello") — you call this
+vfprintf(stdout, "hello") — printf forwards to this, which formats the string into a buffer
+fwrite(buffer, ...) — writes the formatted buffer to the stdout file stream
+_write(1, buffer, len) — the lowest level. 1 is the file descriptor for stdout
+Steps 2-4 are all inside newlib (the C library bundled with ARM GCC). You never see them — they're precompiled in the library. You only provide the bottom of the chain: _write.
+
+That's why it's called a "weak" function — newlib has a default empty one. When you define yours, the linker picks yours instead, and now the whole printf chain has somewhere to actually send the bytes.
+
+Problem:
+
+The printf function uses malloc for buffering that is why _sbrk errors. My ThirdParty folder uses its memory allocation so I disabled sysmem.c from build
+
+Solution:
+ write a custom printf function that I borrowed from my project in micro-os riscv project
+
+
+Learnings:
+If debugU stopped at one point, what does that mean? my debugPosition = 6001, debugtarget = 6000 and debugU = -25 but it is not changing now. so what has happened?
+Answer:
+
+The PID has settled. Error is 6000 - 6001 = -1, which with kp = 5 gives u = -5. But debugU = -25 suggests the integral term built up a bit before settling.
+
+The reason nothing is changing: the error is only -1 tick, so u = -25 is trying to push the motor backward — but -25% duty is below the motor's minimum threshold to actually move (remember the buzzing issue earlier). The motor is stalled, position stays at 6001, error stays at -1, u stays at -25.
+
+This is basically steady-state error — the motor overshot by 1 tick and doesn't have enough drive to correct it. That's normal. One tick off at 6000 is excellent.
+
+If you want it tighter, the integral term will slowly fix it over time — but with ki = 0.2 and error of -1, it accumulates very slowly. You could also just consider ±1 tick as "close enough" and add a dead band.
+
+What each term does
+Kp (Proportional) — reacts to the current error. Big error = big output. The problem: as the motor gets close to the target, error shrinks, so the output shrinks. At some point the output is too weak to overcome friction, and the motor stops with a small remaining error. That leftover is steady-state error. Increasing Kp reduces it but causes overshoot and oscillation.
+
+Ki (Integral) — reacts to accumulated error over time. Even if the error is tiny (-1 tick), the integral keeps adding it up: -1, -2, -3... Eventually the integral term grows large enough to push the motor past the friction threshold and correct that last tick. Ki eliminates steady-state error — that's its primary job. Too much Ki causes overshoot and oscillation (windup).
+
+Kd (Derivative) — reacts to how fast the error is changing. If the motor is approaching the target quickly, the derivative term applies a braking force to slow it down. It reduces overshoot and dampens oscillation. Think of it as a shock absorber. Too much Kd makes the system sluggish and amplifies sensor noise.
+
+In your case
+Your motor stopped at 6001 with u = -25. That's steady-state error caused by:
+
+Kp alone can't fix it — error is -1, so kp * -1 = -5, too weak to move
+Ki is accumulating — 0.2 * eint is slowly growing (that's where the -25 comes from), but the total u is still below the motor's friction threshold
+Kd = 0 — not helping or hurting right now
+The fundamental cause is friction — the motor needs a minimum duty to move, but the PID output for a 1-tick error is below that minimum.
+
+
+The physical resistance that prevents the motor from turning at low duty cycles. It comes from:
+
+Brushes rubbing against the commutator inside the DC motor
+Gear friction if your motor has a gearbox
+Belt/shaft/load resistance — whatever the motor is connected to
+Magnetic cogging — the rotor tends to "snap" to certain positions due to the permanent magnets
+All of these together mean the motor needs a minimum voltage (duty cycle) to start moving. Below that threshold, the electrical energy just turns into heat in the windings instead of rotation.
+
+In your case, u = -25 might be right at or below that threshold. The PID is saying "move back by 1 tick" but the motor physically can't — it's stuck. Like pushing a heavy box with one finger — you're applying force, but not enough to overcome static friction.
