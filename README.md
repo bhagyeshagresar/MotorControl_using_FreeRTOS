@@ -43,8 +43,6 @@ va_list and related macros are defined in the C standard library <cstdarg>
 
 ### 4: Built a Basic PID controller for tracking position
 
-![PID Controller Graph](simple_pid_controller_graph.png)
-
 [![PID Controller Demo](https://img.youtube.com/vi/8RWqjpg8qiw/0.jpg)](https://www.youtube.com/watch?v=8RWqjpg8qiw)
 
 The PID controller computes a control signal (duty cycle) to drive the motor to a target encoder position. The control signal is computed as:
