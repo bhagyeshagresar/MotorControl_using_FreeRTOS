@@ -45,11 +45,7 @@ va_list and related macros are defined in the C standard library <cstdarg>
 
 ![PID Controller Graph](simple_pid_controller_graph.png)
 
-**Demo Videos:**
-
-[![PID Controller Demo 1](https://img.youtube.com/vi/EtAZrFnVjTI/0.jpg)](https://www.youtube.com/watch?v=EtAZrFnVjTI)
-
-[![PID Controller Demo 2](https://img.youtube.com/vi/nMddf0B9irk/0.jpg)](https://www.youtube.com/watch?v=nMddf0B9irk)
+[![PID Controller Demo](https://img.youtube.com/vi/8RWqjpg8qiw/0.jpg)](https://www.youtube.com/watch?v=8RWqjpg8qiw)
 
 The PID controller computes a control signal (duty cycle) to drive the motor to a target encoder position. The control signal is computed as:
 
@@ -67,12 +63,6 @@ where `e = target - pos`, `eint` is the accumulated error over time, and `edert`
 **Anti-windup:** The integral term `eint` is clamped to prevent unbounded accumulation when the output is saturated. Without this, the motor would overshoot badly after sustained error because `eint` takes a long time to unwind.
 
 **Observation:** With a target of 6000 ticks, the motor settled at 6001 with `u = -25` and stopped changing. This is steady-state error caused by motor friction. The PID correctly computed a small negative output to correct the 1-tick overshoot, but -25% duty is below the motor's minimum threshold to physically move. DC motors have a minimum duty cycle needed to overcome internal friction (brush friction, gear friction, magnetic cogging). Below that threshold, the electrical energy dissipates as heat instead of producing rotation. Important thing to note is that there is no load attached to the shaft as of now.
-
-**Demo Videos:**
-
-[![PID Controller Demo 1](https://img.youtube.com/vi/EtAZrFnVjTI/0.jpg)](https://www.youtube.com/watch?v=EtAZrFnVjTI)
-
-[![PID Controller Demo 2](https://img.youtube.com/vi/nMddf0B9irk/0.jpg)](https://www.youtube.com/watch?v=nMddf0B9irk)
 
 ### 4: Next Steps
 1) Add a load to the shift

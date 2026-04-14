@@ -55,12 +55,12 @@ extern "C" void cpp_main(void)
     while (1) {
 
     	//set target position
-    	int32_t target = 6000;
+    	int32_t target = 5000;
 
     	//PID constants
     	float kp = 5;
     	float ki = 0.2;
-    	float kd = 0;
+    	float kd = 0.5;
 
     	//time difference
     	uint32_t currT = getMicros();
