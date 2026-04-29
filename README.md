@@ -51,23 +51,22 @@ The PID controller computes a control signal (duty cycle) to drive the motor to 
 
 where `e = target - pos`, `eint` is the accumulated error over time, and `edert` is the rate of change of error.
 
-**What each coefficient does:**
-- **Kp (Proportional)** - Reacts to current error. Larger error = larger output. On its own, Kp cannot fully eliminate error because as the motor approaches the target, the output becomes too small to overcome motor friction. This remaining offset is called **steady-state error**.
+**What each coefficient did for my project(need to do further tuning):**
+- **Kp (Proportional)** - Reacts to current error. Larger error = larger output. On its own, Kp cannot fully eliminate error because as the motor approaches the target, the output becomes too small to overcome motor friction. This remaining offset is called **steady-state error**. I noticed I had to increase Kp to make the controller achieve the target position faster.
 - **Ki (Integral)** - Accumulates error over time. Even a tiny persistent error will eventually build up enough to push the motor past the friction threshold. Ki eliminates steady-state error. Too much Ki causes overshoot and oscillation (integral windup).
-- **Kd (Derivative)** - Reacts to how fast the error is changing. Applies a braking force when the motor approaches the target quickly, reducing overshoot. Acts like a shock absorber. Too much Kd makes the system sluggish and amplifies sensor noise.
+- **Kd (Derivative)** - Reacts to how fast the error is changing. Applies a braking force when the motor approaches the target quickly, reducing overshoot.
 
 **Time measurement:** `getMicros()` is used because the PID loop runs very fast (sub-millisecond). Millisecond resolution would give `deltaT = 0` on many iterations, breaking the derivative and integral calculations. The time difference is converted to seconds so that PID gains stay in human-readable ranges consistent with standard tuning guides.
 
-**Anti-windup:** The integral term `eint` is clamped to prevent unbounded accumulation when the output is saturated. Without this, the motor would overshoot badly after sustained error because `eint` takes a long time to unwind.
+**Anti-windup:** The integral will keep adding the error in some circumstances(assume the shaft is stuck). In that case it is important to clamp the integral error so that there are no wild overshoots
 
-**Observation:** With a target of 6000 ticks, the motor settled at 6001 with `u = -25` and stopped changing. This is steady-state error caused by motor friction. The PID correctly computed a small negative output to correct the 1-tick overshoot, but -25% duty is below the motor's minimum threshold to physically move. DC motors have a minimum duty cycle needed to overcome internal friction (brush friction, gear friction, magnetic cogging). Below that threshold, the electrical energy dissipates as heat instead of producing rotation. Important thing to note is that there is no load attached to the shaft as of now.
+**Observation:** With a target of 6000 ticks, the motor settled at 6001 with `u = -25` and stopped changing. This is steady-state error caused by motor friction. The PID correctly computed a small negative output to correct the 1-tick overshoot, but -25% duty is below the motor's minimum threshold to physically move.
 
 ### 4: Next Steps
-1) Add a load to the shift
-2) Finish error handling for different functions inside encoder and motor modules.
-3) Create RTOS tasks to move PID controller to a fixed task instead of running in a while loop
-4) Create low-priority tasks for updating UI elements(read encoder, status, etc)
-5) Set-up communication between STM32 and RPI using UART
+1) Finish error handling for different functions inside encoder and motor modules.
+2) Create RTOS tasks to move PID controller to a fixed task instead of running in a while loop
+3) Create low-priority tasks for updating UI elements(read encoder, status, etc)
+4) Set-up communication between STM32 and RPI using UART
 
 ## FreeRTOS Configuration
 This project includes the FreeRTOS kernel in the ThirdParty folder and does not use CMSIS RTOS API. This project does not use sysmem.c because FreeRTOS has its own heap management(make sure to check ThirdParty folder to not exclude from build and exclude sysmem.c from build). Also only heap_4.c is used.
